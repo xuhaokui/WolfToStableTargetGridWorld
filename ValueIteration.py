@@ -6,11 +6,14 @@
 # @Version : $Id$
 
 import numpy as np 
+import numba
+from numba import jit
 
 def initialValueDict(stateList):
 	valueDict={state:np.random.normal() for state in stateList}
 	return valueDict
 
+# @jit(nopython=True)
 class ValueIteration():
 	def __init__(self,stateList,actionList,decayRate,convergeThreshold,maxIterationStep):
 		self.stateList=stateList
@@ -57,7 +60,7 @@ if __name__=="__main__":
 
 	transitionFunction=Transition.TransitionFromStateAndAction(worldRange)
 	createTransitionProbabilityDict=Transition.CreateTransitionProbabilityDict(transitionFunction)
-	createRewardDict = Reward.RewardDict(stateList, actionList, targetReward)
+	createRewardDict = Reward.SingleTargetRewardDict(stateList, actionList, targetReward)
 	runValueIteration=ValueIteration(stateList, actionList, decayRate, convergeThreshold, maxIterationStep)
 	computePolicyFromValue=PolicyFromValue(stateList, actionList, decayRate)
 

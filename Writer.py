@@ -5,4 +5,11 @@
 # @Link    : ${link}
 # @Version : $Id$
 
-import os
+import pickle
+import os 
+
+def savePolicyToPkl(policy,filename):
+	output=open(filename,'wb')
+	pickle.dump(policy, output)
+	output.close()
+	return

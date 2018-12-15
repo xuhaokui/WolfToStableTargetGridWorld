@@ -6,10 +6,12 @@
 # @Version : $Id$
 
 import numpy as np 
+import itertools as it 
 import time
 import Transition
 import Reward
 import ValueIteration
+import Writer
 
 class TrainWolfPolicy():
 	def __init__(self,stateList,transitionProbabilityDict,createRewardDict,runValueIteration,createPolicyFromValue):
@@ -22,11 +24,11 @@ class TrainWolfPolicy():
 		'''action=policy[sheepPosition][wolfPosition]'''
 		wolfPolicy=dict()
 		time1=time.time()
-		for targetState in self.stateList:
+		for targetState in it.product(self.stateList,self.stateList):
 			print(time.time()-time1)
 			print(targetState)
 			time1=time.time()
-			rewardDict=self.createRewardDict(targetState)
+			rewardDict=self.createRewardDict(list(targetState))
 			singleTargetStateValueDict=self.runValueIteration(self.transitionProbabilityDict,rewardDict)
 			singleTargetStatePolicy=self.createPolicyFromValue(self.transitionProbabilityDict,rewardDict,singleTargetStateValueDict)
 			wolfPolicy[targetState]=singleTargetStatePolicy
@@ -34,19 +36,20 @@ class TrainWolfPolicy():
 
 if __name__=="__main__":
 	time0=time.time()
-	worldRange=[0,0,10,10]
+	worldRange=[0,0,2,2]
 	actionList=[(0,1),(0,-1),(1,0),(-1,0)]
 	targetReward=10
 	decayRate=0.9
 	convergeThreshold=0.001
 	maxIterationStep=100
 	stateList=Transition.createStateList(worldRange)
+	savePolicyFilename='SingleWolfTwoSheepsGrid2.pkl'
 
 	print('finish set parameter',time.time()-time0)
 	transitionFunction=Transition.TransitionFromStateAndAction(worldRange)
 	createTransitionProbabilityDict=Transition.CreateTransitionProbabilityDict(transitionFunction)
 	transitionProbabilityDict=createTransitionProbabilityDict(stateList, actionList)
-	createRewardDict=Reward.RewardDict(stateList, actionList, targetReward)
+	createRewardDict=Reward.MultiTargetsRewardDict(stateList, actionList, targetReward)
 	runValueIteration=ValueIteration.ValueIteration(stateList, actionList, decayRate, convergeThreshold, maxIterationStep)
 	createPolicyFromValue=ValueIteration.PolicyFromValue(stateList, actionList, decayRate)
 
@@ -55,6 +58,11 @@ if __name__=="__main__":
 	wolfPolicy=trainWolfPolicy()
 	print(wolfPolicy)
 	print('finish train policy',time.time()-time0)
+
+	Writer.savePolicyToPkl(wolfPolicy, savePolicyFilename)
+	print('finish save policy, mission complete', time.time()-time0)
+
+
 
 
 
