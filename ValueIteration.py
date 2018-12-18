@@ -42,8 +42,9 @@ class PolicyFromValue():
 	def __call__(self,transitionProbabilityDict,rewardDict,valueDict):
 		policyDict=dict()
 		for state in self.stateList:
-			policyDict[state]=self.actionList[np.argmax([np.sum([transitionProbabilityDict[(stateFuture,action,state)]*(rewardDict[(state,action)] + self.decayRate * valueDict[stateFuture]) 
-				for stateFuture in self.stateList]) for action in self.actionList])]
+			policyDict[state]={action:np.sum([transitionProbabilityDict[(stateFuture,action,state)]*(rewardDict[(state,action)] + self.decayRate * valueDict[stateFuture]) 
+				for stateFuture in self.stateList]) for action in self.actionList}
+			policyDict[state]={action:np.divide(policyDict[state][action],np.sum(list(policyDict[state].values()))) for action in self.actionList}
 		return policyDict
 
 if __name__=="__main__":
@@ -55,7 +56,7 @@ if __name__=="__main__":
 	targetReward=10
 	decayRate=0.9
 	convergeThreshold=0.001
-	maxIterationStep=100
+	maxIterationStep=200
 	stateList=Transition.createStateList(worldRange)
 
 	transitionFunction=Transition.TransitionFromStateAndAction(worldRange)
