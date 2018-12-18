@@ -54,7 +54,7 @@ if __name__=="__main__":
 	createPolicyFromValue=ValueIteration.PolicyFromValue(stateList, actionList, decayRate)
 
 	print('finish set function',time.time()-time0)
-	trainWolfPolicy = TrainWolfPolicy(stateList,transitionProbabilityDict,createRewardDict,runValueIteration,createPolicyFromValue)
+	trainWolfPolicy = TrainWolfPolicyValueIteration(stateList,transitionProbabilityDict,createRewardDict,runValueIteration,createPolicyFromValue)
 	wolfPolicy=trainWolfPolicy()
 	print(wolfPolicy)
 	print('finish train policy',time.time()-time0)
