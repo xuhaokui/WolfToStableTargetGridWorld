@@ -13,13 +13,12 @@ def initialQDict(stateList,actionList,targetStateList):
 	return QDict
 
 def initialPolicyDict(stateList,actionList):
-	policyDict = {state:random.choice(actionList) for state in stateList}
+	policyDict = {state:{action:1.0/len(actionList) for action in actionList} for state in stateList}
 	return policyDict
 
 def updatePolicy(policyDict,QDict,state):
-	QValueMax=np.max(list(QDict[state].values()))
-	actionListWithMaxValue=[action for action in QDict[state].keys() if QDict[state][action]==QValueMax]
-	policyDict[state]=random.choice(actionListWithMaxValue)
+	QValueDictForState=QDict[state]
+	policyDict[state]={k:np.divide(v,np.sum(list(QValueDictForState.values()))) for k,v in QValueDictForState.items()}
 	return policyDict
 
 class QLearning():
@@ -44,7 +43,8 @@ class QLearning():
 				if np.random.uniform(0, 1)<self.epsilon:
 					action=random.choice(self.actionList)
 				else:
-					action=policyDict[state]
+					actionMaxList=[action for action in self.actionList if policyDict[state][action]==np.max(list(policyDict[state].values()))]
+					action=random.choice(actionMaxList)
 				nextState=tuple(self.TransitionFromStateAndAction(state,action))
 				nextQValueMax=np.max(list(QDict[nextState].values()))
 				QDict[state][action]=QDict[state][action]+self.alpha*(rewardDict[(nextState,action)] + self.gamma*nextQValueMax - QDict[state][action])
@@ -68,7 +68,7 @@ if __name__=="__main__":
 	alpha=1
 	gamma=0.9
 	epsilon=0.1
-	segmentTotalNumber=200
+	segmentTotalNumber=1000
 
 	TransitionFromStateAndAction=Transition.TransitionFromStateAndAction(worldRange)
 	createRewardDict=Reward.MultiTargetsRewardDict(stateList, actionList, targetReward)
