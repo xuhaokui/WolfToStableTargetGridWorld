@@ -13,7 +13,7 @@ import Reward
 import ValueIteration
 import Writer
 
-class TrainWolfPolicy():
+class TrainWolfPolicyValueIteration():
 	def __init__(self,stateList,transitionProbabilityDict,createRewardDict,runValueIteration,createPolicyFromValue):
 		self.stateList=stateList
 		self.transitionProbabilityDict=transitionProbabilityDict
