@@ -11,6 +11,7 @@ import time
 import Transition
 import Reward
 import ValueIteration
+import QLearning
 import Writer
 
 class TrainWolfPolicyValueIteration():
@@ -34,6 +35,23 @@ class TrainWolfPolicyValueIteration():
 			wolfPolicy[targetState]=singleTargetStatePolicy
 		return wolfPolicy
 
+class TrainWolfPolicyQLearning():
+	def __init__(self,stateList,createRewardDict,runQLearning):
+		self.stateList=stateList
+		self.createRewardDict=createRewardDict
+		self.runQLearning=runQLearning
+	def __call__(self):
+		wolfPolicy=dict()
+		time1=time.time()
+		for targetState in it.product(self.stateList,self.stateList):
+			print(time.time()-time1)
+			print(targetState)
+			time1=time.time()
+			rewardDict=self.createRewardDict(list(targetState))
+			[QDict,policyDict]=self.runQLearning(rewardDict,list(targetState))
+			wolfPolicy[targetState]=policyDict.copy()
+		return wolfPolicy
+
 if __name__=="__main__":
 	time0=time.time()
 	worldRange=[0,0,2,2]
@@ -41,22 +59,29 @@ if __name__=="__main__":
 	targetReward=10
 	decayRate=0.9
 	convergeThreshold=0.001
-	maxIterationStep=100
+	maxIterationStep=1
 	stateList=Transition.createStateList(worldRange)
 	savePolicyFilename='SingleWolfTwoSheepsGrid2.pkl'
+	alpha=1
+	gamma=0.9
+	epsilon=0.1
+	segmentTotalNumber=1000
 
 	print('finish set parameter',time.time()-time0)
 	transitionFunction=Transition.TransitionFromStateAndAction(worldRange)
 	createTransitionProbabilityDict=Transition.CreateTransitionProbabilityDict(transitionFunction)
+	transitionFromStateAndAction=Transition.TransitionFromStateAndAction(worldRange)
 	transitionProbabilityDict=createTransitionProbabilityDict(stateList, actionList)
 	createRewardDict=Reward.MultiTargetsRewardDict(stateList, actionList, targetReward)
 	runValueIteration=ValueIteration.ValueIteration(stateList, actionList, decayRate, convergeThreshold, maxIterationStep)
 	createPolicyFromValue=ValueIteration.PolicyFromValue(stateList, actionList, decayRate)
+	runQLearning=QLearning.QLearning(alpha, gamma, epsilon, segmentTotalNumber, stateList, actionList, transitionFromStateAndAction)
 
 	print('finish set function',time.time()-time0)
 	trainWolfPolicy = TrainWolfPolicyValueIteration(stateList,transitionProbabilityDict,createRewardDict,runValueIteration,createPolicyFromValue)
+	# trainWolfPolicy = TrainWolfPolicyQLearning(stateList, createRewardDict, runQLearning)
 	wolfPolicy=trainWolfPolicy()
-	print(wolfPolicy)
+	# print(wolfPolicy)
 	print('finish train policy',time.time()-time0)
 
 	Writer.savePolicyToPkl(wolfPolicy, savePolicyFilename)

@@ -6,6 +6,7 @@
 # @Version : $Id$
 
 import numpy as np 
+import time
 import numba
 from numba import jit
 
@@ -26,12 +27,14 @@ class ValueIteration():
 		# print(valueDict)
 		for iterStep in range(self.maxIterationStep):
 			valueDictOld = valueDict.copy()
+			time0=time.time()
 			for stateCurrent in self.stateList:
-				valueDict[stateCurrent] = np.max([np.sum([transitionProbabilityDict[(stateFuture,action,stateCurrent)]*(rewardDict[(stateCurrent,action)] + self.decayRate * valueDictOld[stateFuture]) 
-					for stateFuture in self.stateList]) for action in self.actionList])
+				valueDict[stateCurrent] = np.max([np.sum([p*(rewardDict[(stateCurrent,action)] + self.decayRate * valueDictOld[stateFuture]) 
+					for (stateFuture,p) in transitionProbabilityDict[stateCurrent][action].items()]) for action in self.actionList])
 			# print(iterStep,valueDict)
 			if np.all(np.array([valueDict[state] - valueDictOld[state] for state in self.stateList])<self.convergeThreshold):
 				break
+			# print(time.time()-time0)
 		return valueDict
 
 class PolicyFromValue():
@@ -42,21 +45,21 @@ class PolicyFromValue():
 	def __call__(self,transitionProbabilityDict,rewardDict,valueDict):
 		policyDict=dict()
 		for state in self.stateList:
-			policyDict[state]={action:np.sum([transitionProbabilityDict[(stateFuture,action,state)]*(rewardDict[(state,action)] + self.decayRate * valueDict[stateFuture]) 
-				for stateFuture in self.stateList]) for action in self.actionList}
+			policyDict[state]={action:np.sum([p*(rewardDict[(state,action)] + self.decayRate * valueDict[stateFuture]) 
+				for (stateFuture,p) in transitionProbabilityDict[state][action].items()]) for action in self.actionList}
 			policyDict[state]={action:np.divide(policyDict[state][action],np.sum(list(policyDict[state].values()))) for action in self.actionList}
 		return policyDict
 
 if __name__=="__main__":
 	import Transition
 	import Reward
-	worldRange=[0,0,2,2]
+	worldRange=[0,0,21,21]
 	actionList=[(0,1),(0,-1),(1,0),(-1,0)]
 	targetState=(1,1)
 	targetReward=10
 	decayRate=0.9
 	convergeThreshold=0.001
-	maxIterationStep=200
+	maxIterationStep=100
 	stateList=Transition.createStateList(worldRange)
 
 	transitionFunction=Transition.TransitionFromStateAndAction(worldRange)
@@ -65,13 +68,17 @@ if __name__=="__main__":
 	runValueIteration=ValueIteration(stateList, actionList, decayRate, convergeThreshold, maxIterationStep)
 	computePolicyFromValue=PolicyFromValue(stateList, actionList, decayRate)
 
+	time1=time.time()
 	transitionProbabilityDict=createTransitionProbabilityDict(stateList, actionList)
+	print('prepare transitionDict',time.time()-time1)
 	rewardDict=createRewardDict(targetState)
+	print('finish prepare')
 	valueDict=runValueIteration(transitionProbabilityDict, rewardDict)
+	print('finish valueIteration',time.time()-time1)
 	# print(valueDict)
 
 	policyDict=computePolicyFromValue(transitionProbabilityDict, rewardDict, valueDict)
-	print(policyDict)
+	# print(policyDict)
 
 
 

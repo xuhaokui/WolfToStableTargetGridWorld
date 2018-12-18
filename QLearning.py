@@ -22,21 +22,20 @@ def updatePolicy(policyDict,QDict,state):
 	return policyDict
 
 class QLearning():
-	def __init__(self,alpha,gamma,epsilon,segmentTotalNumber,stateList,actionList,targetStateList,TransitionFromStateAndAction):
+	def __init__(self,alpha,gamma,epsilon,segmentTotalNumber,stateList,actionList,transitionFromStateAndAction):
 		self.alpha=alpha
 		self.gamma=gamma
 		self.epsilon=epsilon
 		self.segmentTotalNumber=segmentTotalNumber
 		self.stateList=stateList
 		self.actionList=actionList
-		self.targetStateList=targetStateList
-		self.TransitionFromStateAndAction=TransitionFromStateAndAction
-	def __call__(self,rewardDict):
-		QDict=initialQDict(self.stateList, self.actionList, self.targetStateList)
+		self.transitionFromStateAndAction=transitionFromStateAndAction
+	def __call__(self,rewardDict,targetStateList):
+		QDict=initialQDict(self.stateList, self.actionList, targetStateList)
 		policyDict=initialPolicyDict(self.stateList, self.actionList)
 		for segment in range(self.segmentTotalNumber):
 			state = random.choice(self.stateList)
-			while state in self.targetStateList:
+			while state in targetStateList:
 				state = random.choice(self.stateList)
 			keepTraining=True
 			while keepTraining:
@@ -45,7 +44,7 @@ class QLearning():
 				else:
 					actionMaxList=[action for action in self.actionList if policyDict[state][action]==np.max(list(policyDict[state].values()))]
 					action=random.choice(actionMaxList)
-				nextState=tuple(self.TransitionFromStateAndAction(state,action))
+				nextState=tuple(self.transitionFromStateAndAction(state,action))
 				nextQValueMax=np.max(list(QDict[nextState].values()))
 				QDict[state][action]=QDict[state][action]+self.alpha*(rewardDict[(nextState,action)] + self.gamma*nextQValueMax - QDict[state][action])
 				policyDict=updatePolicy(policyDict, QDict, state)
@@ -53,7 +52,7 @@ class QLearning():
 				# print('action',action)
 				# print(QDict)
 				state=nextState
-				if state in self.targetStateList:
+				if state in targetStateList:
 					keepTraining=False
 		return QDict,policyDict
 
@@ -70,12 +69,12 @@ if __name__=="__main__":
 	epsilon=0.1
 	segmentTotalNumber=1000
 
-	TransitionFromStateAndAction=Transition.TransitionFromStateAndAction(worldRange)
+	transitionFromStateAndAction=Transition.TransitionFromStateAndAction(worldRange)
 	createRewardDict=Reward.MultiTargetsRewardDict(stateList, actionList, targetReward)
-	runQLearning=QLearning(alpha, gamma, epsilon, segmentTotalNumber, stateList, actionList, targetStateList, TransitionFromStateAndAction)
+	runQLearning=QLearning(alpha, gamma, epsilon, segmentTotalNumber, stateList, actionList, transitionFromStateAndAction)
 
 	rewardDict=createRewardDict(targetStateList)
-	[QDict,policyDict]=runQLearning(rewardDict)
+	[QDict,policyDict]=runQLearning(rewardDict,targetStateList)
 
 	print(QDict)
 	print(policyDict)

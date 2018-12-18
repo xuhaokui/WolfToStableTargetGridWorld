@@ -19,18 +19,17 @@ class TransitionFromStateAndAction():
 		state = np.add(stateFrom,action)
 		if state[0]<self.worldRange[0] or state[0]>self.worldRange[2] or state[1]<self.worldRange[1] or state[1]>self.worldRange[3]:
 			state = stateFrom
-		return state
+		return tuple(state)
 
 class CreateTransitionProbabilityDict():
 	def __init__(self,transitionFunction):
 		self.transitionFunction=transitionFunction
 	def __call__(self,stateList,actionList):
-		keyList=list(it.product(stateList,actionList,stateList))
-		transitionProbabilityDict={key:1 if np.all(self.transitionFunction(key[2],key[1])==key[0]) else 0 for key in keyList}
+		transitionProbabilityDict={currentState:{action:{self.transitionFunction(currentState,action): 1} for action in actionList} for currentState in stateList}
 		return transitionProbabilityDict
 
 if __name__=="__main__":
-	worldRange=[0,0,3,3]
+	worldRange=[0,0,21,21]
 	actionList=[(0,1),(0,-1),(1,0),(-1,0)]
 	stateList=createStateList(worldRange)
 	print(stateList)
@@ -40,4 +39,4 @@ if __name__=="__main__":
 
 	state=transitionFunction((0,0),(0,-1))
 	transitionProbabilityDict=createTransitionProbabilityDict(stateList, actionList)
-	print(transitionProbabilityDict[((1,1),(-1,0),(0,1))])
+	print(transitionProbabilityDict)
