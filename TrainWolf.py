@@ -7,6 +7,7 @@
 
 import numpy as np 
 import itertools as it 
+import klepto
 import time
 import Transition
 import Reward
@@ -54,20 +55,20 @@ class TrainWolfPolicyQLearning():
 
 if __name__=="__main__":
 	time0=time.time()
-	worldRange=[0,0,2,2]
+	worldRange=[0,0,21,21]
 	actionList=[(0,1),(0,-1),(1,0),(-1,0)]
 	targetReward=10
 	decayRate=0.9
 	convergeThreshold=0.001
 	maxIterationStep=1
 	stateList=Transition.createStateList(worldRange)
-	savePolicyFilename='SingleWolfTwoSheepsGrid2.pkl'
+	savePolicyFilename='SingleWolfTwoSheepsGrid10'
 	alpha=1
 	gamma=0.9
 	epsilon=0.1
 	segmentTotalNumber=1000
 
-	print('finish set parameter',time.time()-time0)
+	print('finish setting parameter',time.time()-time0)
 	transitionFunction=Transition.TransitionFromStateAndAction(worldRange)
 	createTransitionProbabilityDict=Transition.CreateTransitionProbabilityDict(transitionFunction)
 	transitionFromStateAndAction=Transition.TransitionFromStateAndAction(worldRange)
@@ -77,15 +78,21 @@ if __name__=="__main__":
 	createPolicyFromValue=ValueIteration.PolicyFromValue(stateList, actionList, decayRate)
 	runQLearning=QLearning.QLearning(alpha, gamma, epsilon, segmentTotalNumber, stateList, actionList, transitionFromStateAndAction)
 
-	print('finish set function',time.time()-time0)
+	print('finish setting function',time.time()-time0)
 	trainWolfPolicy = TrainWolfPolicyValueIteration(stateList,transitionProbabilityDict,createRewardDict,runValueIteration,createPolicyFromValue)
 	# trainWolfPolicy = TrainWolfPolicyQLearning(stateList, createRewardDict, runQLearning)
 	wolfPolicy=trainWolfPolicy()
 	# print(wolfPolicy)
-	print('finish train policy',time.time()-time0)
+	print('finish training policy',time.time()-time0)
 
+	print('begin saving policy, please wait')
 	Writer.savePolicyToPkl(wolfPolicy, savePolicyFilename)
-	print('finish save policy, mission complete', time.time()-time0)
+	# Writer.savePolicyToNpy(wolfPolicy, savePolicyFilename)
+	# Writer.savePolicyToJson(wolfPolicy, savePolicyFilename)
+	print('finish saving policy, mission complete', time.time()-time0)
+
+	# loadWolfPolicy=klepto.archives.file_archive(savePolicyFilename+'.json')
+	# print(loadWolfPolicy.archive[((1,0),(0,1))])
 
 
 

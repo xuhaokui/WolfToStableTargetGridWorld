@@ -6,10 +6,24 @@
 # @Version : $Id$
 
 import pickle
-import os 
+import numpy as np 
+import os
+import klepto 
 
 def savePolicyToPkl(policy,filename):
+	filename=filename+'.pkl'
 	output=open(filename,'wb')
 	pickle.dump(policy, output)
 	output.close()
+	return
+
+def savePolicyToNpy(policy,filename):
+	filename=filename+'.npy'
+	np.save(filename,policy)
+	return
+
+def savePolicyToJson(policy,filename):
+	filename=filename+'.json'
+	saveDict=klepto.archives.file_archive(filename,policy)
+	saveDict.dump()
 	return
