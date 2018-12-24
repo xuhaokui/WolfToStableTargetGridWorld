@@ -27,6 +27,9 @@ class TrainWolfPolicyValueIteration():
 		wolfPolicy=dict()
 		time1=time.time()
 		for targetState in it.product(self.stateList,self.stateList):
+			transTargetState = (targetState[1],targetState[0])
+			if transTargetState in wolfPolicy.keys():
+				continue
 			print(time.time()-time1)
 			print(targetState)
 			time1=time.time()
@@ -55,14 +58,14 @@ class TrainWolfPolicyQLearning():
 
 if __name__=="__main__":
 	time0=time.time()
-	worldRange=[0,0,21,21]
+	worldRange=[0,0,15,15]
 	actionList=[(0,1),(0,-1),(1,0),(-1,0)]
 	targetReward=10
 	decayRate=0.9
 	convergeThreshold=0.001
 	maxIterationStep=1
 	stateList=Transition.createStateList(worldRange)
-	savePolicyFilename='SingleWolfTwoSheepsGrid10'
+	savePolicyFilename='SingleWolfTwoSheepsGrid15'
 	alpha=1
 	gamma=0.9
 	epsilon=0.1
