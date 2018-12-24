@@ -53,9 +53,9 @@ class PolicyFromValue():
 if __name__=="__main__":
 	import Transition
 	import Reward
-	worldRange=[0,0,21,21]
+	worldRange=[0,0,15,15]
 	actionList=[(0,1),(0,-1),(1,0),(-1,0)]
-	targetState=(1,1)
+	targetState=((3,12),(7,7))
 	targetReward=10
 	decayRate=0.9
 	convergeThreshold=0.001
@@ -64,7 +64,7 @@ if __name__=="__main__":
 
 	transitionFunction=Transition.TransitionFromStateAndAction(worldRange)
 	createTransitionProbabilityDict=Transition.CreateTransitionProbabilityDict(transitionFunction)
-	createRewardDict = Reward.SingleTargetRewardDict(stateList, actionList, targetReward)
+	createRewardDict = Reward.MultiTargetsRewardDict(stateList, actionList, targetReward)
 	runValueIteration=ValueIteration(stateList, actionList, decayRate, convergeThreshold, maxIterationStep)
 	computePolicyFromValue=PolicyFromValue(stateList, actionList, decayRate)
 
@@ -75,10 +75,12 @@ if __name__=="__main__":
 	print('finish prepare')
 	valueDict=runValueIteration(transitionProbabilityDict, rewardDict)
 	print('finish valueIteration',time.time()-time1)
-	# print(valueDict)
+	print(valueDict)
 
 	policyDict=computePolicyFromValue(transitionProbabilityDict, rewardDict, valueDict)
-	# print(policyDict)
+	print(policyDict[6,4])
+	print(policyDict[5,4])
+	print(policyDict[5,3])
 
 
 

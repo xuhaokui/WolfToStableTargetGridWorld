@@ -63,7 +63,7 @@ if __name__=="__main__":
 	targetReward=10
 	decayRate=0.9
 	convergeThreshold=0.001
-	maxIterationStep=1
+	maxIterationStep=100
 	stateList=Transition.createStateList(worldRange)
 	savePolicyFilename='SingleWolfTwoSheepsGrid15'
 	alpha=1
